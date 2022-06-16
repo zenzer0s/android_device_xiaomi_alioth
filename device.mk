@@ -213,7 +213,8 @@ PRODUCT_COPY_FILES += \
 
 # Device Settings
 PRODUCT_PACKAGES += \
-    XiaomiParts
+    XiaomiParts \
+    KProfiles
 
 # GameBar Performance Overlay
 $(call inherit-product, packages/apps/GameBar/gamebar.mk)
