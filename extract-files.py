@@ -18,6 +18,7 @@ from extract_utils.main import (
 )
 
 blob_fixups: blob_fixups_user_type = {
+<<<<<<< HEAD
     'vendor/etc/init/init.batterysecret.rc': blob_fixup()
         .regex_replace('.*seclabel u:r:batterysecret:s0\n', ''),
     'vendor/etc/libnfc-nci.conf': blob_fixup()
@@ -59,6 +60,8 @@ blob_fixups: blob_fixups_user_type = {
         .binary_regex_replace(b'\x9A\x0A\x00\x94', b'\x1F\x20\x03\xD5'),
     'system_ext/lib64/libwfdnative.so': blob_fixup()
         .add_needed('libinput_shim.so'),
+=======
+>>>>>>> 136e75f2 (sm8250-common: Update WFD system blobs from dada OS2.0.217.0.WOCMIXM)
     'vendor/etc/init/init.mi_thermald.rc': blob_fixup()
         .regex_replace('.*seclabel u:r:mi_thermald:s0\n', ''),
     'vendor/etc/seccomp_policy/atfwd@2.0.policy': blob_fixup()
