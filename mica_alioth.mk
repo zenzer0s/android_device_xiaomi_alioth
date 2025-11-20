@@ -8,19 +8,16 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 
-# Inherit some common lineage stuff.
-$(call inherit-product, vendor/lineage/config/common_full_phone.mk)
-
-# Inherit Camera-related flags
-TARGET_USES_MIUI_CAMERA := true
-TARGET_INCLUDES_MIUI_CAMERA := true
+# Inherit some common mica stuff.
+$(call inherit-product, vendor/mica/config/common_full_phone.mk)
 
 # Inherit from alioth device
 $(call inherit-product, device/xiaomi/alioth/device.mk)
 
-TARGET_INCLUDE_REVANCED := true
+TARGET_INCLUDE_REVANCED := false
 
-PRODUCT_NAME := lineage_alioth
+# Device identifier
+PRODUCT_NAME := mica_alioth
 PRODUCT_DEVICE := alioth
 PRODUCT_MANUFACTURER := Xiaomi
 PRODUCT_BRAND := POCO

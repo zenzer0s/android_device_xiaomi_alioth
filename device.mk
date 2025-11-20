@@ -15,15 +15,11 @@ TARGET_SCREEN_HEIGHT := 2400
 TARGET_SCREEN_WIDTH := 1080
 
 # Camera
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/camera/camera_cnf.txt:$(TARGET_COPY_OUT_VENDOR)/etc/camera/camera_cnf.txt
+
 PRODUCT_PACKAGES += \
     libpiex_shim
-
-# Miui Camera
-include device/xiaomi/camera/miuicamera.mk
-
-# Miui Camera STLicense
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/camera/st_license.lic:$(TARGET_COPY_OUT_VENDOR)/etc/camera/st_license.lic
 
 # Init
 $(call soong_config_set,libinit,vendor_init_lib,//$(LOCAL_PATH):init_xiaomi_alioth)
@@ -194,10 +190,8 @@ PRODUCT_COPY_FILES += \
     system/core/libprocessgroup/profiles/cgroups.json:$(TARGET_COPY_OUT_VENDOR)/etc/cgroups.json \
     system/core/libprocessgroup/profiles/task_profiles.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json
 
-$(call soong_config_set_bool, ufsbsg, ufsframework, bsg)
-$(call soong_config_set_bool,android_hardware_audio,skip_speaker_layout_channel_mask_field,true)
-$(call soong_config_set_bool,lineage_health,charging_control_supports_bypass,false)
-$(call soong_config_set_bool,camera,override_format_from_reserved,true)
+
+$(call soong_config_set,android_hardware_audio,skip_speaker_layout_channel_mask_field,true)
 
 # Configstore
 PRODUCT_PACKAGES += \
@@ -305,8 +299,8 @@ PRODUCT_PACKAGES += \
     android.hardware.light-service.lineage
 
 # Lineage Health
-PRODUCT_PACKAGES += \
-    vendor.lineage.health-service.default
+# PRODUCT_PACKAGES += \
+#     vendor.lineage.health-service.default
 
 # Media configs
 PRODUCT_PACKAGES += \
@@ -314,7 +308,7 @@ PRODUCT_PACKAGES += \
     media_codecs_performance_c2.xml \
     video_system_specs.json
 
-$(call soong_config_set_bool,stagefright,target_disable_thumbnail_block_model,true)
+$(call soong_config_set,stagefright,target_disable_thumbnail_block_model,true)
 
 # NFC
 PRODUCT_PACKAGES += \
