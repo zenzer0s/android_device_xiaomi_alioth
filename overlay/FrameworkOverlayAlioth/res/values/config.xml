@@ -95,8 +95,8 @@
     <bool name="config_dozePulsePickup">true</bool>
 
     <!-- Type of the double tap sensor. Empty if double tap is not supported. -->
-
     <bool name="config_dozeDoubleTapSensorAvailable">true</bool>
+    <string name="config_dozeDoubleTapSensorType" translatable="false">org.lineageos.sensor.double_tap</string>
 
     <bool name="config_supports_double_tap_ambient" translatable="false">true</bool>
 
