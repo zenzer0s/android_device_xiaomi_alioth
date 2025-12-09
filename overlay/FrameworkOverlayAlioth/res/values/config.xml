@@ -100,8 +100,6 @@
 
     <bool name="config_supports_double_tap_ambient" translatable="false">true</bool>
 
-    <string name="config_dozeDoubleTapSensorType" translatable="false">org.lineageos.sensor.double_tap</string>
-
     <!-- True if the display hardware only has brightness buckets rather than a full range of
          backlight values -->
     <bool name="config_displayBrightnessBucketsInDoze">true</bool>
