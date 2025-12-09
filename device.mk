@@ -28,6 +28,9 @@ PRODUCT_COPY_FILES += \
 # Init
 $(call soong_config_set,libinit,vendor_init_lib,//$(LOCAL_PATH):init_xiaomi_alioth)
 
+# CameraService Extension
+$(call soong_config_set,libcameraservice,ext_lib,libcameraservice_extension.sm8250)
+
 # Shipping API level
 PRODUCT_SHIPPING_API_LEVEL := 30
 
