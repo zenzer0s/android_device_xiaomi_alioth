@@ -58,6 +58,13 @@ class BootCompletedReceiver : BroadcastReceiver() {
                 val hbmManager = HBMManager.getInstance(context)
                 hbmManager.initializeOnBoot()
 
+                Logging.i(TAG, "Initializing Thermal")
+                val thermalUtils = ThermalUtils.getInstance(context)
+                thermalUtils.startService()
+                if (!thermalUtils.enabled) {
+                    thermalUtils.setDefaultThermalProfile()
+                }
+
                 val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                 val autoHBMEnabled = prefs.getBoolean(HBMManager.PREF_AUTO_HBM_KEY, false)
 
