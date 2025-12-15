@@ -110,6 +110,15 @@
                 android:resource="@drawable/youtube_activity_24px" />
         </activity>
 
+        <activity
+            android:name=".ui.TilePreferencesActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SubSettingsBase">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+        </activity>
+
         <service android:name=".services.ThermalService" android:exported="false" />
         
         <service
