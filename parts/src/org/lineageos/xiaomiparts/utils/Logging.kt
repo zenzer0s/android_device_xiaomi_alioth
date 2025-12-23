@@ -4,15 +4,11 @@ import android.util.Log
 
 private const val MAIN_TAG = "XMParts"
 
-fun dlog(tag: String, msg: String) {
-    if (Log.isLoggable(MAIN_TAG, Log.DEBUG) || Log.isLoggable(tag, Log.DEBUG)) {
-        Log.d("$MAIN_TAG-$tag", msg)
-    }
-}
-
 object Logging {
     fun d(tag: String, msg: String) {
-        Log.d("$MAIN_TAG-$tag", msg)
+        if (Log.isLoggable(MAIN_TAG, Log.DEBUG) || Log.isLoggable(tag, Log.DEBUG)) {
+            Log.d("$MAIN_TAG-$tag", msg)
+        }
     }
     
     fun i(tag: String, msg: String) {

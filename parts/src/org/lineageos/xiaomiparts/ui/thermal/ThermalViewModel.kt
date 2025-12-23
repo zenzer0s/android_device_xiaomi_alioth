@@ -1,6 +1,5 @@
 package org.lineageos.xiaomiparts.ui.thermal
 
-import android.content.Context
 import android.content.pm.LauncherApps
 import android.os.Process
 import android.os.UserHandle
@@ -14,14 +13,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.lineageos.xiaomiparts.ui.thermal.AppThermalState
-import org.lineageos.xiaomiparts.ui.thermal.ThermalUiState
 import org.lineageos.xiaomiparts.data.ThermalUtils
 import org.lineageos.xiaomiparts.data.ThermalUtils.ThermalState
 import org.lineageos.xiaomiparts.utils.Logging
 
 class ThermalViewModel(
-    private val context: Context,
     private val thermalUtils: ThermalUtils,
     private val launcherApps: LauncherApps
 ) : ViewModel() {
@@ -62,19 +58,19 @@ class ThermalViewModel(
         }
     }
 
+    private var launcherCallbackRegistered: Boolean = false
+
     init {
-        // Initialize with current thermal state
         _uiState.update { it.copy(isEnabled = thermalUtils.enabled) }
-        
-        // Load apps if thermal is enabled
+
         if (thermalUtils.enabled) {
             loadApps()
         }
-        
-        // Register launcher apps callback on IO thread to avoid blocking
-        viewModelScope.launch(Dispatchers.IO) {
+
+        viewModelScope.launch {
             try {
                 launcherApps.registerCallback(launcherAppsCallback)
+                launcherCallbackRegistered = true
                 Logging.d(TAG, "LauncherApps callback registered")
             } catch (e: Exception) {
                 Logging.d(TAG, "Failed to register callback: ${e.message}")
@@ -95,8 +91,7 @@ class ThermalViewModel(
     fun updateAppThermalState(packageName: String, state: ThermalState) {
         Logging.d(TAG, "updateAppThermalState: $packageName -> $state")
         thermalUtils.writePackage(packageName, state.id)
-        
-        // Update UI state
+
         _uiState.update { currentState ->
             currentState.copy(
                 apps = currentState.apps.map { app ->
@@ -179,12 +174,10 @@ class ThermalViewModel(
             )
             
             _uiState.update { currentState ->
-                // Check if app already exists
                 if (currentState.apps.any { it.packageName == packageName }) {
                     return@update currentState
                 }
-                
-                // Insert in sorted position
+
                 val updatedApps = (currentState.apps + newApp)
                     .sortedBy { it.label.lowercase() }
                 
@@ -195,7 +188,9 @@ class ThermalViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        launcherApps.unregisterCallback(launcherAppsCallback)
+        if (launcherCallbackRegistered) {
+            runCatching { launcherApps.unregisterCallback(launcherAppsCallback) }
+        }
         Logging.d(TAG, "ViewModel cleared")
     }
 
@@ -204,18 +199,14 @@ class ThermalViewModel(
     }
 }
 
-/**
- * Factory for creating ThermalViewModel with dependencies.
- */
 class ThermalViewModelFactory(
-    private val context: Context,
     private val thermalUtils: ThermalUtils,
     private val launcherApps: LauncherApps
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ThermalViewModel::class.java)) {
-            return ThermalViewModel(context, thermalUtils, launcherApps) as T
+            return ThermalViewModel(thermalUtils, launcherApps) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

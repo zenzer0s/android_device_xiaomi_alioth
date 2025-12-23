@@ -18,27 +18,41 @@ data class DcDimmingUiState(
 )
 
 class DcDimmingViewModel(
-    private val app: Application,
+    app: Application,
     private val dcDimmingUtils: DcDimmingUtils
 ) : AndroidViewModel(app) {
 
-    private val _uiState = MutableStateFlow(DcDimmingUiState(
-        isDcDimmingEnabled = dcDimmingUtils.isDcDimmingEnabled(),
-        isDcDimmingSupported = true
-    ))
+    private val _uiState = MutableStateFlow(DcDimmingUiState())
     val uiState: StateFlow<DcDimmingUiState> = _uiState.asStateFlow()
 
     init {
+        loadInitialState()
+    }
+
+    private fun loadInitialState() {
         viewModelScope.launch {
             val isSupported = dcDimmingUtils.isDcDimmingSupported()
-            _uiState.update { it.copy(isDcDimmingSupported = isSupported) }
+            val isEnabled = if (isSupported) dcDimmingUtils.isDcDimmingEnabled() else false
+            _uiState.update {
+                it.copy(
+                    isDcDimmingSupported = isSupported,
+                    isDcDimmingEnabled = isEnabled
+                )
+            }
         }
     }
 
     fun setDcDimmingEnabled(enabled: Boolean) {
         viewModelScope.launch {
+            val isSupported = dcDimmingUtils.isDcDimmingSupported()
+            if (!isSupported) {
+                _uiState.update { it.copy(isDcDimmingSupported = false, isDcDimmingEnabled = false) }
+                return@launch
+            }
+
             dcDimmingUtils.setDcDimmingEnabled(enabled)
-            _uiState.update { it.copy(isDcDimmingEnabled = enabled) }
+            val actualEnabled = dcDimmingUtils.isDcDimmingEnabled()
+            _uiState.update { it.copy(isDcDimmingEnabled = actualEnabled) }
         }
     }
 }

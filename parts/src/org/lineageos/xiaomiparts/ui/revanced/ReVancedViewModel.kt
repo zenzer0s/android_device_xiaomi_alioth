@@ -19,9 +19,7 @@ class ReVancedViewModel(
     private val reVancedManager: ReVancedManager
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ReVancedUiState(
-        isEnabled = false
-    ))
+    private val _uiState = MutableStateFlow(ReVancedUiState())
     val uiState: StateFlow<ReVancedUiState> = _uiState.asStateFlow()
 
     private val _toastMessage = MutableStateFlow<Pair<Int, Boolean>?>(null)
@@ -36,9 +34,8 @@ class ReVancedViewModel(
     fun setEnabled(enabled: Boolean) {
         viewModelScope.launch {
             val success = reVancedManager.setEnabled(enabled)
-            if (success) {
-                _uiState.update { it.copy(isEnabled = enabled) }
-            }
+            val actualEnabled = reVancedManager.isEnabled()
+            _uiState.update { it.copy(isEnabled = actualEnabled) }
             
             _toastMessage.update {
                 if (success)

@@ -23,6 +23,9 @@ class ThermalService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    @Volatile private var receiverRegistered = false
+    @Volatile private var taskListenerRegistered = false
+
     private var currentApp = ""
         set(value) {
             if (field == value) return
@@ -68,20 +71,46 @@ class ThermalService : Service() {
     override fun onDestroy() {
         Logging.d(TAG, "Destroying service")
         serviceScope.cancel()
-        unregisterReceiver(intentReceiver)
-        runCatching { ActivityTaskManager.getService().unregisterTaskStackListener(taskListener) }
+
+        if (receiverRegistered) {
+            runCatching { unregisterReceiver(intentReceiver) }
+            receiverRegistered = false
+        }
+
+        if (taskListenerRegistered) {
+            runCatching { ActivityTaskManager.getService().unregisterTaskStackListener(taskListener) }
+            taskListenerRegistered = false
+        }
+
+        super.onDestroy()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Logging.d(TAG, "Starting service")
-        runCatching { ActivityTaskManager.getService().registerTaskStackListener(taskListener) }
-        registerReceiver(
-            intentReceiver,
-            IntentFilter().apply {
-                addAction(Intent.ACTION_SCREEN_OFF)
-                addAction(Intent.ACTION_SCREEN_ON)
-            },
-        )
+
+        if (!taskListenerRegistered) {
+            val ok = runCatching {
+                ActivityTaskManager.getService().registerTaskStackListener(taskListener)
+            }.isSuccess
+            taskListenerRegistered = ok
+        }
+
+        if (!receiverRegistered) {
+            val ok = runCatching {
+                registerReceiver(
+                    intentReceiver,
+                    IntentFilter().apply {
+                        addAction(Intent.ACTION_SCREEN_OFF)
+                        addAction(Intent.ACTION_SCREEN_ON)
+                    },
+                )
+            }.isSuccess
+            receiverRegistered = ok
+        }
+
+        taskListener.onTaskStackChanged()
+        setThermalProfile()
+
         return START_STICKY
     }
 
