@@ -7,8 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import org.lineageos.xiaomiparts.R
 
-// Confirmation dialog for resetting thermal profiles.
- 
 @Composable
 fun ResetConfirmationDialog(
     onConfirm: () -> Unit,

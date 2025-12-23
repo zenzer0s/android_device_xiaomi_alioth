@@ -1,7 +1,5 @@
 package org.lineageos.xiaomiparts.ui.charge
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -32,7 +30,7 @@ class ChargeViewModel(
     private fun loadInitialState() {
         viewModelScope.launch {
             val isSupported = chargeUtils.isBypassChargeSupported()
-            val isEnabled = chargeUtils.isBypassChargeEnabled()
+            val isEnabled = if (isSupported) chargeUtils.isBypassChargeEnabled() else false
             _uiState.update {
                 it.copy(
                     isBypassSupported = isSupported,
@@ -43,22 +41,48 @@ class ChargeViewModel(
     }
 
     fun setBypassCharge(enabled: Boolean) {
-        if (enabled) {
-            _uiState.update { it.copy(showBypassWarningDialog = true) }
-        } else {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            val isSupported = chargeUtils.isBypassChargeSupported()
+            if (!isSupported) {
+                _uiState.update {
+                    it.copy(
+                        isBypassSupported = false,
+                        bypassChargeEnabled = false,
+                        showBypassWarningDialog = false
+                    )
+                }
+                return@launch
+            }
+
+            if (enabled) {
+                _uiState.update { it.copy(showBypassWarningDialog = true) }
+            } else {
                 chargeUtils.enableBypassCharge(false)
-                _uiState.update { it.copy(bypassChargeEnabled = false) }
+                val actualEnabled = chargeUtils.isBypassChargeEnabled()
+                _uiState.update { it.copy(bypassChargeEnabled = actualEnabled) }
             }
         }
     }
 
     fun confirmBypassCharge() {
         viewModelScope.launch {
+            val isSupported = chargeUtils.isBypassChargeSupported()
+            if (!isSupported) {
+                _uiState.update {
+                    it.copy(
+                        isBypassSupported = false,
+                        bypassChargeEnabled = false,
+                        showBypassWarningDialog = false
+                    )
+                }
+                return@launch
+            }
+
             chargeUtils.enableBypassCharge(true)
+            val actualEnabled = chargeUtils.isBypassChargeEnabled()
             _uiState.update {
                 it.copy(
-                    bypassChargeEnabled = true,
+                    bypassChargeEnabled = actualEnabled,
                     showBypassWarningDialog = false
                 )
             }

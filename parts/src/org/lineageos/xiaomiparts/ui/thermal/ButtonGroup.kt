@@ -62,7 +62,7 @@ fun ButtonGroup(
                 .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
         ) {
             Text(
-                text = "Set profile for $appLabel",
+                text = stringResource(org.lineageos.xiaomiparts.R.string.thermal_dialog_title_app, appLabel),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp)
             )

@@ -47,6 +47,8 @@ class BypassChargeTileService : TileService() {
         
         tileScope.launch {
             chargeUtils.enableBypassCharge(newEnabled)
+            val actualEnabled = chargeUtils.isBypassChargeEnabled()
+            updateTileUI(actualEnabled)
         }
     }
 

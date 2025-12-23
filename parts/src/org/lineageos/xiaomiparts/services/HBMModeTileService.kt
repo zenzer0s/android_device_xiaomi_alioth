@@ -11,6 +11,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.lineageos.xiaomiparts.data.HBMManager
+import org.lineageos.xiaomiparts.data.PREF_HBM_KEY
 import org.lineageos.xiaomiparts.utils.Logging
 
 class HBMModeTileService : TileService(), HBMManager.HBMStateListener {
@@ -42,7 +43,7 @@ class HBMModeTileService : TileService(), HBMManager.HBMStateListener {
         Logging.i(TAG, "Tile listening")
         
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val enabled = prefs.getBoolean(HBMManager.Companion.PREF_HBM_KEY, false)
+        val enabled = prefs.getBoolean(PREF_HBM_KEY, false)
         updateTileUI(enabled)
     }
 
@@ -59,15 +60,15 @@ class HBMModeTileService : TileService(), HBMManager.HBMStateListener {
             return
         }
         
-        val currentState = qsTile.state
-        val newEnabled = currentState != Tile.STATE_ACTIVE
+        val tile = qsTile ?: return
+        val newEnabled = tile.state != Tile.STATE_ACTIVE
         
         Logging.i(TAG, "Tile clicked: toggling HBM to $newEnabled")
         
         isOperationInProgress = true
         
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        prefs.edit().putBoolean(HBMManager.Companion.PREF_HBM_KEY, newEnabled).apply()
+        prefs.edit().putBoolean(PREF_HBM_KEY, newEnabled).apply()
         
         updateTileUI(newEnabled)
         
