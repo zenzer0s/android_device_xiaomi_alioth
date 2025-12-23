@@ -52,4 +52,8 @@
     <string name="thermal_loading">Loading apps…</string>
     <string name="thermal_reset">Reset</string>
     <string name="thermal_reset_message">Reset per-app profiles to default?</string>
+    <string name="thermal_dialog_title_app">Set profile for %1$s</string>
+    <string name="thermal_error">Error: %1$s</string>
+    <string name="thermal_empty_title">No apps found</string>
+    <string name="thermal_empty_summary">Install some apps to manage thermal profiles</string>
 </resources>

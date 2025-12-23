@@ -11,7 +11,12 @@ import androidx.annotation.StringRes
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.lineageos.xiaomiparts.R
 import org.lineageos.xiaomiparts.utils.Logging
 import org.lineageos.xiaomiparts.utils.writeLine
@@ -26,17 +31,30 @@ private constructor(
     private val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
     private val serviceIntent = Intent(context, ThermalService::class.java)
 
-    var enabled: Boolean = sharedPrefs.getBoolean(THERMAL_ENABLED, false)
+    private val toggleScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val toggleMutex = Mutex()
+    @Volatile private var toggleJob: Job? = null
+
+    var enabled: Boolean = sharedPrefs.getBoolean(PREF_THERMAL_ENABLED, false)
         set(value) {
             if (field == value) return
             field = value
-            sharedPrefs.edit().putBoolean(THERMAL_ENABLED, value).apply()
-            if (value) {
-                startService()
-            } else {
-                CoroutineScope(Dispatchers.IO).launch {
-                    setDefaultThermalProfile()
-                    stopService()
+            sharedPrefs.edit().putBoolean(PREF_THERMAL_ENABLED, value).apply()
+
+            val targetEnabled = value
+            toggleJob?.cancel()
+            toggleJob = toggleScope.launch {
+                if (!isActive) return@launch
+                toggleMutex.withLock {
+                    if (!isActive) return@withLock
+                    if (enabled != targetEnabled) return@withLock
+
+                    if (targetEnabled) {
+                        startService()
+                    } else {
+                        setDefaultThermalProfile()
+                        stopService()
+                    }
                 }
             }
         }
@@ -62,22 +80,34 @@ private constructor(
 
     private fun writeValue(value: String) {
         Logging.d(TAG, "writing pref value: $value")
-        sharedPrefs.edit().putString(THERMAL_CONTROL, value).apply()
+        sharedPrefs.edit().putString(PREF_THERMAL_CONTROL, value).apply()
     }
 
-    private fun readValue(): String = sharedPrefs.getString(THERMAL_CONTROL, null) ?: DEFAULT_VALUE
+    private fun readValue(): String = normalizeStoredValue(sharedPrefs.getString(PREF_THERMAL_CONTROL, null))
 
     fun writePackage(packageName: String, mode: Int) {
         Logging.d(TAG, "writePackage: $packageName -> $mode")
-        var newValue = value.replace("$packageName,", "")
+        val thermalStates = ThermalState.values()
+        if (mode !in thermalStates.indices) {
+            Logging.w(TAG, "writePackage: invalid mode index=$mode")
+            return
+        }
+
+        val newValue = normalizeStoredValue(value).replace("$packageName,", "")
         val modes = newValue.split(":").toMutableList()
+        if (modes.size != thermalStates.size) {
+            Logging.w(TAG, "writePackage: malformed state string, resetting")
+            value = DEFAULT_VALUE
+            return
+        }
+
         modes[mode] += "$packageName,"
         value = modes.joinToString(":")
     }
 
     fun getStateForPackage(packageName: String): ThermalState {
-        val modes = value.split(":")
-        return ThermalState.values().find { state -> modes[state.id].contains("$packageName,") }
+        val modes = normalizeStoredValue(value).split(":")
+        return ThermalState.values().find { state -> modes.getOrNull(state.id)?.contains("$packageName,") == true }
             ?: getDefaultStateForPackage(packageName)
     }
 
@@ -88,7 +118,10 @@ private constructor(
 
     suspend fun setDefaultThermalProfile() {
         Logging.d(TAG, "setDefaultThermalProfile")
-        writeLine(THERMAL_SCONFIG, THERMAL_STATE_OFF)
+        val ok = writeLine(THERMAL_SCONFIG, THERMAL_STATE_OFF)
+        if (!ok) {
+            Logging.e(TAG, "Failed to write default thermal profile")
+        }
     }
 
     suspend fun setThermalProfile(packageName: String) {
@@ -98,7 +131,10 @@ private constructor(
         }
         val state = getStateForPackage(packageName)
         Logging.d(TAG, "setThermalProfile: $packageName -> $state")
-        writeLine(THERMAL_SCONFIG, state.config)
+        val ok = writeLine(THERMAL_SCONFIG, state.config)
+        if (!ok) {
+            Logging.e(TAG, "Failed to write thermal profile: $state")
+        }
     }
 
     private fun getDefaultStateForPackage(packageName: String): ThermalState {
@@ -201,10 +237,6 @@ private constructor(
 
     companion object {
         private const val TAG = "ThermalUtils"
-        private const val THERMAL_CONTROL = "thermal_control_v2"
-        private const val THERMAL_ENABLED = "thermal_enabled"
-
-        private const val THERMAL_SCONFIG = "/sys/class/thermal/thermal_message/sconfig"
         private const val THERMAL_STATE_OFF = "20" // thermal-mgame.conf
 
         private val DEFAULT_VALUE = ThermalState.values().map { it.prefix }.joinToString(":")
@@ -233,6 +265,25 @@ private constructor(
                 "com.texts.throttlebench",
                 "skynet.cputhrottlingtest",
             )
+
+        private fun normalizeStoredValue(raw: String?): String {
+            if (raw.isNullOrBlank()) return DEFAULT_VALUE
+
+            val states = ThermalState.values()
+            val segments = raw.split(":")
+            val payloadByPrefix = HashMap<String, String>(states.size)
+
+            for (segment in segments) {
+                for (state in states) {
+                    if (segment.startsWith(state.prefix)) {
+                        payloadByPrefix[state.prefix] = segment.removePrefix(state.prefix)
+                        break
+                    }
+                }
+            }
+
+            return states.joinToString(":") { state -> state.prefix + (payloadByPrefix[state.prefix] ?: "") }
+        }
 
         @Volatile private var instance: ThermalUtils? = null
 

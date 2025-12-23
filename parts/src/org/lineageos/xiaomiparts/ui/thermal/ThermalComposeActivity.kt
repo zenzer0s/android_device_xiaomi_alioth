@@ -40,7 +40,6 @@ class ThermalComposeActivity : ComponentActivity() {
                 ) {
                     val viewModel: ThermalViewModel = viewModel(
                         factory = ThermalViewModelFactory(
-                            context = applicationContext,
                             thermalUtils = thermalUtils,
                             launcherApps = launcherApps
                         )

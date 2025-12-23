@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.lineageos.xiaomiparts.data.DcDimmingUtils
@@ -31,7 +30,6 @@ class HbmViewModel(
     private val dcDimmingUtils: DcDimmingUtils
 ) : AndroidViewModel(app), HBMManager.HBMStateListener {
 
-    // FIX: Read non-suspend value
     private val _hbmEnabled = MutableStateFlow(hbmManager.isHBMEnabled())
     private val _autoHbmEnabled = MutableStateFlow(hbmManager.isAutoHbmEnabled())
     private val _thresholdValue = MutableStateFlow(hbmManager.getThresholdValue().toFloat())
@@ -39,7 +37,6 @@ class HbmViewModel(
     private val _isDcDimmingEnabled = MutableStateFlow(dcDimmingUtils.isDcDimmingEnabled())
 
     init {
-        // No async init needed, isHBMEnabled is not suspend
         hbmManager.addListener(this)
     }
 
@@ -51,13 +48,6 @@ class HbmViewModel(
     override fun onHBMStateChanged(enabled: Boolean, owner: HBMOwner) {
         _hbmEnabled.value = enabled
     }
-
-    val hbmEnabled: StateFlow<Boolean> = _hbmEnabled
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
-
-    val autoHbmSliderEnabled: StateFlow<Boolean> = hbmEnabled
-        .map { hbmOn -> hbmOn && _autoHbmEnabled.value }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
     val uiState: StateFlow<HbmUiState> = combine(
         _hbmEnabled,
@@ -85,38 +75,31 @@ class HbmViewModel(
     )
 
     fun setHbm(enabled: Boolean) {
-        // FIX: Must use viewModelScope to call suspend functions
         viewModelScope.launch {
             if (enabled) {
-                // dcDimmingUtils.isDcDimmingEnabled() is NOT suspend
                 if (dcDimmingUtils.isDcDimmingEnabled()) {
-                    dcDimmingUtils.setDcDimmingEnabled(false) // This is suspend
+                    dcDimmingUtils.setDcDimmingEnabled(false)
                     _isDcDimmingEnabled.value = false
                 }
                 
-                val success = hbmManager.enableHBM(HBMOwner.MANUAL) // This is suspend
-                // State is updated by onHBMStateChanged listener
+                hbmManager.enableHBM(HBMOwner.MANUAL)
             } else {
-                hbmManager.disableHBM(HBMOwner.MANUAL) // This is suspend
-                // State is updated by onHBMStateChanged listener
+                hbmManager.disableHBM(HBMOwner.MANUAL)
             }
         }
     }
 
     fun setAutoHbm(enabled: Boolean) {
-        // This is not suspend, so no launch needed
         hbmManager.setAutoHbmEnabled(enabled)
         _autoHbmEnabled.value = enabled
     }
 
     fun setThreshold(value: Float) {
-        // This is not suspend, so no launch needed
         hbmManager.setThresholdValue(value.toInt())
         _thresholdValue.value = value
     }
 
     fun setDisableTime(value: Float) {
-        // This is not suspend, so no launch needed
         val intValue = value.toInt()
         hbmManager.setDisableTime(intValue)
         _hbmDisableTime.value = intValue

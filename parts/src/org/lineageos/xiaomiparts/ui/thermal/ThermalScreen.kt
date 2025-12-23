@@ -1,10 +1,9 @@
 package org.lineageos.xiaomiparts.ui.thermal
 
-// import androidx.compose.foundation.clickable // No longer needed here
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
-// import androidx.compose.foundation.shape.RoundedCornerShape // No longer needed here
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.rounded.Check
@@ -18,12 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
 import org.lineageos.xiaomiparts.R
-import org.lineageos.xiaomiparts.ui.thermal.ThermalViewModel
-import org.lineageos.xiaomiparts.ui.thermal.AppThermalState
-import org.lineageos.xiaomiparts.theme.XiaomiPartsShapeDefaults
 import org.lineageos.xiaomiparts.ui.components.BaseSettingsScreen
 import org.lineageos.xiaomiparts.theme.CustomColors
 import org.lineageos.xiaomiparts.theme.GroupedListDefaults
@@ -37,9 +31,7 @@ fun ThermalScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
-    
-    // Bottom Sheet State
-    val sheetState = rememberModalBottomSheetState()
+
     var showBottomSheet by remember { mutableStateOf(false) }
     var appToEdit by remember { mutableStateOf<AppThermalState?>(null) }
     
@@ -58,23 +50,17 @@ fun ThermalScreen(
             }
         }
     ) { paddingValues ->
-        
-        // The LazyColumn is now the main scrolling element
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp),
-            
-            // --- USE THE DEFAULTS FOR SPACING ---
             verticalArrangement = Arrangement.spacedBy(GroupedListDefaults.VerticalSpacing)
-        
         ) {
-            
             item {
                 Spacer(Modifier.height(12.dp))
             }
-            
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(), // Removed padding
@@ -103,10 +89,6 @@ fun ThermalScreen(
                                 text = stringResource(R.string.thermal_enable),
                                 style = MaterialTheme.typography.titleMedium
                             )
-                            Text(
-                                text = stringResource(R.string.thermal_summary),
-                                style = MaterialTheme.typography.bodySmall
-                            )
                         }
                         Switch(
                             checked = uiState.isEnabled,
@@ -123,7 +105,6 @@ fun ThermalScreen(
                     }
                 }
             }
-            
             if (uiState.isEnabled) {
                 when {
                     uiState.isLoading -> {
@@ -148,8 +129,6 @@ fun ThermalScreen(
                             items = uiState.apps,
                             key = { _, app -> app.packageName }
                         ) { index, app ->
-                            
-                            // --- USE THE DEFAULTS FOR SHAPE ---
                             val shape = GroupedListDefaults.getShape(index, uiState.apps.size)
 
                             AppThermalItem(
@@ -164,14 +143,12 @@ fun ThermalScreen(
                     }
                 }
             }
-            
             item {
                 Spacer(Modifier.height(16.dp))
             }
         }
     }
-    
-    // Reset confirmation dialog
+
     if (showResetDialog) {
         ResetConfirmationDialog(
             onConfirm = {
@@ -181,8 +158,7 @@ fun ThermalScreen(
             onDismiss = { showResetDialog = false }
         )
     }
-    
-    // Profile selection bottom sheet
+
     if (showBottomSheet && appToEdit != null) {
         val appFromUiState = uiState.apps.find { it.packageName == appToEdit!!.packageName }
         val currentActualState = appFromUiState?.currentState ?: appToEdit!!.currentState
@@ -198,11 +174,10 @@ fun ThermalScreen(
     }
 }
 
-// ... (LoadingState, ErrorState, and EmptyState composables remain unchanged) ...
 @Composable
-private fun LoadingState() {
+private fun LazyItemScope.LoadingState() {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillParentMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -218,13 +193,13 @@ private fun LoadingState() {
 }
 
 @Composable
-private fun ErrorState(error: String) {
+private fun LazyItemScope.ErrorState(error: String) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillParentMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Error: $error",
+            text = stringResource(R.string.thermal_error, error),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center,
@@ -234,9 +209,9 @@ private fun ErrorState(error: String) {
 }
 
 @Composable
-private fun EmptyState() {
+private fun LazyItemScope.EmptyState() {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillParentMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -244,14 +219,14 @@ private fun EmptyState() {
             modifier = Modifier.padding(32.dp)
         ) {
             Text(
-                text = "No apps found",
+                text = stringResource(R.string.thermal_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Install some apps to manage thermal profiles",
+                text = stringResource(R.string.thermal_empty_summary),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

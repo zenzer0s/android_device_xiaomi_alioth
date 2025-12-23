@@ -8,8 +8,6 @@ import org.lineageos.xiaomiparts.utils.Logging
 
 class ReVancedManager private constructor(context: Context) {
 
-    private val appContext = context.applicationContext
-
     suspend fun isEnabled(): Boolean = withContext(Dispatchers.IO) {
         SystemProperties.getBoolean(PROPERTY_REVANCED_ENABLED, DEFAULT_ENABLED)
     }
@@ -17,17 +15,24 @@ class ReVancedManager private constructor(context: Context) {
     suspend fun setEnabled(enabled: Boolean): Boolean = withContext(Dispatchers.IO) {
         try {
             SystemProperties.set(PROPERTY_REVANCED_ENABLED, if (enabled) "true" else "false")
-            Logging.log(TAG, "ReVanced ${if (enabled) "enabled" else "disabled"}")
-            true
+
+            val readBack = SystemProperties.getBoolean(PROPERTY_REVANCED_ENABLED, !enabled)
+            val success = readBack == enabled
+            if (success) {
+                Logging.i(TAG, "ReVanced ${if (enabled) "enabled" else "disabled"}")
+            } else {
+                Logging.e(TAG, "ReVanced property write did not stick (expected=$enabled, actual=$readBack)")
+            }
+
+            success
         } catch (e: Exception) {
-            Logging.log(TAG, "Failed to set ReVanced state: ${e.message}")
+            Logging.e(TAG, "Failed to set ReVanced state", e)
             false
         }
     }
 
     companion object {
         private const val TAG = "ReVancedManager"
-        private const val PROPERTY_REVANCED_ENABLED = "persist.sys.revan.mod"
         private const val DEFAULT_ENABLED = true
 
         @Volatile private var instance: ReVancedManager? = null

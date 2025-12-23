@@ -22,8 +22,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.lineageos.xiaomiparts.data.PREF_AUTO_HBM_THRESHOLD_KEY
-import org.lineageos.xiaomiparts.data.PREF_HBM_DISABLE_TIME_KEY
 import org.lineageos.xiaomiparts.data.PREF_DC_DIMMING_KEY
 import org.lineageos.xiaomiparts.data.HBMManager
 import org.lineageos.xiaomiparts.utils.Logging
@@ -63,15 +61,22 @@ class AutoHBMService : Service() {
                     handler.removeCallbacks(it)
                     disableHBMRunnable = null
                 }
-                
+
                 if (!isLocked && !dcDimmingEnabled && !autoHBMActive) {
                     Logging.i(TAG, "Lux $currentLux > $luxThreshold, enabling Auto HBM")
                     
                     serviceScope.launch {
-                        hbmManager.enableHBM(HBMManager.HBMOwner.AUTO_SERVICE)
+                        val enabled = hbmManager.enableHBM(HBMManager.HBMOwner.AUTO_SERVICE)
+                        handler.post {
+                            autoHBMActive = enabled || hbmManager.isHBMEnabled()
+                        }
+
+                        if (enabled) {
+                            Logging.i(TAG, "Auto HBM enabled successfully")
+                        } else {
+                            Logging.i(TAG, "Auto HBM enable skipped/blocked")
+                        }
                     }
-                    autoHBMActive = true
-                    Logging.i(TAG, "Auto HBM enabled successfully")
                 }
             }
             else if (currentLux < luxThreshold && autoHBMActive) {
@@ -84,10 +89,18 @@ class AutoHBMService : Service() {
                         Logging.i(TAG, "Lux $currentLux < $luxThreshold after delay, disabling Auto HBM")
                         
                         serviceScope.launch {
-                            hbmManager.disableHBM(HBMManager.HBMOwner.AUTO_SERVICE)
+                            val disabled = hbmManager.disableHBM(HBMManager.HBMOwner.AUTO_SERVICE)
+                            handler.post {
+
+                                autoHBMActive = false
+                            }
+
+                            if (disabled) {
+                                Logging.i(TAG, "Auto HBM disabled successfully")
+                            } else {
+                                Logging.i(TAG, "Auto HBM disable skipped/blocked")
+                            }
                         }
-                        autoHBMActive = false
-                        Logging.i(TAG, "Auto HBM disabled successfully")
                     } else {
                         Logging.i(TAG, "Lux increased during delay, keeping Auto HBM enabled")
                     }
@@ -155,8 +168,6 @@ class AutoHBMService : Service() {
         super.onDestroy()
         Logging.i(TAG, "AutoHBMService destroyed")
         
-        serviceScope.cancel()
-        
         try {
             unregisterReceiver(screenStateReceiver)
         } catch (e: Exception) {
@@ -169,15 +180,21 @@ class AutoHBMService : Service() {
             Logging.i(TAG, "Service stopping - disabling Auto HBM")
             
             serviceScope.launch {
-                hbmManager.disableHBM(HBMManager.HBMOwner.AUTO_SERVICE)
+                val disabled = hbmManager.disableHBM(HBMManager.HBMOwner.AUTO_SERVICE)
+                handler.post {
+                    autoHBMActive = false
+                }
+                if (!disabled) {
+                    Logging.i(TAG, "Auto HBM disable skipped/blocked")
+                }
             }
-            autoHBMActive = false
         }
         
         disableHBMRunnable?.let {
             handler.removeCallbacks(it)
             disableHBMRunnable = null
         }
+        serviceScope.cancel()
     }
     
     override fun onBind(intent: Intent?): IBinder? = null
@@ -210,9 +227,14 @@ class AutoHBMService : Service() {
             Logging.i(TAG, "Screen off - disabling Auto HBM")
             
             serviceScope.launch {
-                hbmManager.disableHBM(HBMManager.HBMOwner.AUTO_SERVICE)
+                val disabled = hbmManager.disableHBM(HBMManager.HBMOwner.AUTO_SERVICE)
+                handler.post {
+                    autoHBMActive = false
+                }
+                if (!disabled) {
+                    Logging.i(TAG, "Auto HBM disable skipped/blocked")
+                }
             }
-            autoHBMActive = false
         }
     }
     
