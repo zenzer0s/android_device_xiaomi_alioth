@@ -84,6 +84,7 @@ fun ButtonGroup(
                             else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                         },
                         colors = ToggleButtonDefaults.toggleButtonColors(
+                            containerColor = CustomColors.listItemColors.containerColor,
                             checkedContainerColor = CustomColors.selectedListItemColors.containerColor,
                             checkedContentColor = CustomColors.selectedListItemColors.leadingIconColor
                         )
@@ -126,6 +127,7 @@ fun ButtonGroup(
                             else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                         },
                         colors = ToggleButtonDefaults.toggleButtonColors(
+                            containerColor = CustomColors.listItemColors.containerColor,
                             checkedContainerColor = CustomColors.selectedListItemColors.containerColor,
                             checkedContentColor = CustomColors.selectedListItemColors.leadingIconColor
                         )
@@ -168,6 +170,7 @@ fun ButtonGroup(
                             else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                         },
                         colors = ToggleButtonDefaults.toggleButtonColors(
+                            containerColor = CustomColors.listItemColors.containerColor,
                             checkedContainerColor = CustomColors.selectedListItemColors.containerColor,
                             checkedContentColor = CustomColors.selectedListItemColors.leadingIconColor
                         )
