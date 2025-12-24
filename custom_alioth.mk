@@ -8,8 +8,8 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 
-# Inherit some common lineage stuff.
-$(call inherit-product, vendor/lineage/config/common_full_phone.mk)
+# Inherit some common custom stuff.
+$(call inherit-product, vendor/custom/config/common_full_phone.mk)
 
 # Inherit Camera-related flags
 TARGET_USES_MIUI_CAMERA := true
@@ -18,7 +18,12 @@ TARGET_INCLUDES_MIUI_CAMERA := true
 # Inherit from alioth device
 $(call inherit-product, device/xiaomi/alioth/device.mk)
 
-TARGET_INCLUDE_REVANCED := true
+TARGET_INCLUDE_REVANCED := false
+TARGET_DISABLE_EPPE = true
+ASCP_MAINTAINER = zenzer0s
+WITH_BCR := true
+WITH_GMS := true
+ASCP_OFFICIAL := true
 
 PRODUCT_NAME := lineage_alioth
 PRODUCT_DEVICE := alioth
