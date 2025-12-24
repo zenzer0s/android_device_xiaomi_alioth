@@ -2,6 +2,7 @@ package org.lineageos.xiaomiparts.ui.thermal
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -174,7 +175,7 @@ fun ThermalScreen(
 }
 
 @Composable
-private fun LoadingState() {
+private fun LazyItemScope.LoadingState() {
     Box(
         modifier = Modifier.fillParentMaxSize(),
         contentAlignment = Alignment.Center
@@ -192,7 +193,7 @@ private fun LoadingState() {
 }
 
 @Composable
-private fun ErrorState(error: String) {
+private fun LazyItemScope.ErrorState(error: String) {
     Box(
         modifier = Modifier.fillParentMaxSize(),
         contentAlignment = Alignment.Center
@@ -208,7 +209,7 @@ private fun ErrorState(error: String) {
 }
 
 @Composable
-private fun EmptyState() {
+private fun LazyItemScope.EmptyState() {
     Box(
         modifier = Modifier.fillParentMaxSize(),
         contentAlignment = Alignment.Center
