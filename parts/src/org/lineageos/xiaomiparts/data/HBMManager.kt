@@ -145,19 +145,16 @@ class HBMManager private constructor(context: Context) {
             val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
             val resolver = appContext.contentResolver
 
-            val currentSystemMode = Settings.System.getInt(
-                resolver,
-                Settings.System.SCREEN_BRIGHTNESS_MODE,
-                Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
-            )
-            
-            if (currentSystemMode == Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL) {
-                val modeToRestore = savedBrightnessMode 
-                    ?: if (prefs.contains(PREF_HBM_SAVED_BRIGHTNESS_MODE)) 
-                        prefs.getInt(PREF_HBM_SAVED_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC) 
-                       else Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
+            if (savedBrightnessMode != null ||
+                prefs.contains(PREF_HBM_SAVED_BRIGHTNESS_MODE)) {
 
-                Logging.i(TAG, "Restoring brightness mode: $modeToRestore")
+                val modeToRestore =
+                    savedBrightnessMode
+                        ?: prefs.getInt(
+                            PREF_HBM_SAVED_BRIGHTNESS_MODE,
+                            Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
+                        )
+
                 Settings.System.putInt(
                     resolver,
                     Settings.System.SCREEN_BRIGHTNESS_MODE,
