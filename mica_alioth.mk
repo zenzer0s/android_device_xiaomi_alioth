@@ -15,6 +15,7 @@ $(call inherit-product, vendor/mica/config/common_full_phone.mk)
 $(call inherit-product, device/xiaomi/alioth/device.mk)
 
 TARGET_INCLUDE_REVANCED := false
+TARGET_FACE_UNLOCK_SUPPORTED := true
 
 # Device identifier
 PRODUCT_NAME := mica_alioth
