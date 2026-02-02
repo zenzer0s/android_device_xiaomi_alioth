@@ -117,4 +117,7 @@
         <item>0</item>
     </integer-array>
 
+    <!-- Whether or not lockscreen shortcuts can be customized -->
+    <bool name="custom_lockscreen_shortcuts_enabled">true</bool>
+
 </resources>
