@@ -59,6 +59,24 @@ private constructor(
             }
         }
 
+    var qsMode: Int
+        get() = sharedPrefs.getInt(PREF_THERMAL_QS_MODE, QsMode.DEFAULT.value)
+        set(value) {
+            if (qsMode == value) return
+            sharedPrefs.edit().putInt(PREF_THERMAL_QS_MODE, value).apply()
+            
+            toggleScope.launch {
+                toggleMutex.withLock {
+                    if (enabled) {
+                        // Restarting the service triggers onStartCommand, which re-applies the thermal profile
+                        startService()
+                    } else {
+                        setDefaultThermalProfile()
+                    }
+                }
+            }
+        }
+
     var value: String = readValue()
         set(value) {
             if (field == value) return
@@ -105,7 +123,7 @@ private constructor(
         value = modes.joinToString(":")
     }
 
-    fun getStateForPackage(packageName: String): ThermalState {
+    fun getStateForPackage(packageName: String): ThermalState? {
         val modes = normalizeStoredValue(value).split(":")
         return ThermalState.values().find { state -> modes.getOrNull(state.id)?.contains("$packageName,") == true }
             ?: getDefaultStateForPackage(packageName)
@@ -118,7 +136,8 @@ private constructor(
 
     suspend fun setDefaultThermalProfile() {
         Logging.d(TAG, "setDefaultThermalProfile")
-        val ok = writeLine(THERMAL_SCONFIG, THERMAL_STATE_OFF)
+        val currentQsMode = QsMode.values().find { it.value == qsMode } ?: QsMode.DEFAULT
+        val ok = writeLine(THERMAL_SCONFIG, currentQsMode.config)
         if (!ok) {
             Logging.e(TAG, "Failed to write default thermal profile")
         }
@@ -130,14 +149,15 @@ private constructor(
             return
         }
         val state = getStateForPackage(packageName)
-        Logging.d(TAG, "setThermalProfile: $packageName -> $state")
-        val ok = writeLine(THERMAL_SCONFIG, state.config)
+        val configValue = state?.config ?: (QsMode.values().find { it.value == qsMode } ?: QsMode.DEFAULT).config
+        Logging.d(TAG, "setThermalProfile: $packageName -> config=$configValue (state=$state)")
+        val ok = writeLine(THERMAL_SCONFIG, configValue)
         if (!ok) {
-            Logging.e(TAG, "Failed to write thermal profile: $state")
+            Logging.e(TAG, "Failed to write thermal profile: $configValue")
         }
     }
 
-    private fun getDefaultStateForPackage(packageName: String): ThermalState {
+    private fun getDefaultStateForPackage(packageName: String): ThermalState? {
         runCatching { context.packageManager.getApplicationInfo(packageName, 0) }
             .onSuccess {
                 when (it.category) {
@@ -147,7 +167,7 @@ private constructor(
                 }
             }
             .onFailure {
-                return ThermalState.DEFAULT
+                return null
             }
 
         return when {
@@ -157,7 +177,7 @@ private constructor(
             getDefaultDialerApplication(context) == packageName -> ThermalState.DIALER
             isBrowserApp(context, packageName, UserHandle.myUserId()) -> ThermalState.BROWSER
             isCameraApp(packageName) -> ThermalState.CAMERA
-            else -> ThermalState.DEFAULT
+            else -> null
         }
     }
 
@@ -235,9 +255,16 @@ private constructor(
         ),
     }
 
+    enum class QsMode(val value: Int, val config: String) {
+        BATTERY(0, "20"),
+        DEFAULT(1, "0"),
+        PERFORMANCE(2, "13")
+    }
+
     companion object {
         private const val TAG = "ThermalUtils"
         private const val THERMAL_STATE_OFF = "20" // thermal-mgame.conf
+        private const val PREF_THERMAL_QS_MODE = "thermal_qs_mode"
 
         private val DEFAULT_VALUE = ThermalState.values().map { it.prefix }.joinToString(":")
 

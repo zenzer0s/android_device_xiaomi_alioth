@@ -127,7 +127,7 @@ class ThermalViewModel(
                                 icon = info.getIcon(0),
                                 currentState = thermalUtils.getStateForPackage(
                                     info.componentName.packageName
-                                )
+                                ) ?: ThermalState.DEFAULT
                             )
                         }
                         .sortedBy { it.label.lowercase() }
@@ -170,7 +170,7 @@ class ThermalViewModel(
                 packageName = info.componentName.packageName,
                 label = info.label.toString(),
                 icon = info.getIcon(0),
-                currentState = thermalUtils.getStateForPackage(info.componentName.packageName)
+                currentState = thermalUtils.getStateForPackage(info.componentName.packageName) ?: ThermalState.DEFAULT
             )
             
             _uiState.update { currentState ->
