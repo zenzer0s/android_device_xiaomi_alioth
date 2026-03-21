@@ -46,12 +46,7 @@
     <string name="charge_bypass_unavailable">Bypass charging is not supported on this device</string>
     <string name="charge_bypass_info">When enabled, the phone draws power directly from the charger to run the system, bypassing the battery. This reduces heat during heavy tasks (like gaming) but should be used with caution.</string>
 
-    <string name="revanced_title">ReVanced modifications</string>
-    <string name="revanced_summary">Modified apps with ad-blocking and background playback</string>
-    <string name="revanced_enable_title">Enable ReVanced</string>
-    <string name="revanced_restart_required">Device restart required</string>
-    <string name="revanced_toggle_failed">Failed to toggle ReVanced</string>
-    <string name="revanced_info">ReVanced adds helpful features like ad-blocking, background playback, and more. Includes the latest built-in ReVanced YouTube and YouTube Music. No MicroG is required. Auto-updates are disabled for both apps, and you should not update them from the Play Store. A device reboot is only required if you manually toggle the feature on or off.</string>
+
 
     <string name="thermal_apps_title">Per-app profiles</string>
     <string name="thermal_loading">Loading apps…</string>

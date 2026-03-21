@@ -35,6 +35,3 @@ binder_call(hal_motor, devicesettings_app)
 get_prop(devicesettings_app, settingslib_prop)
 get_prop(devicesettings_app, default_prop);
 
-# Allow XiaomiParts to get and set ReVanced properties
-get_prop(devicesettings_app, revanced_prop)
-set_prop(devicesettings_app, revanced_prop)

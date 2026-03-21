@@ -41,12 +41,7 @@ PRODUCT_SOONG_NAMESPACES += \
 # Inherit from vendor blobs
 $(call inherit-product, vendor/xiaomi/alioth/alioth-vendor.mk)
 
-# ReVanced integration
-ifeq ($(TARGET_INCLUDE_REVANCED),true)
-$(call inherit-product, vendor/revanced/products/revanced.mk)
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.revanced.available=true
-endif
+
 
 # Setup dalvik vm configs
 $(call inherit-product, frameworks/native/build/phone-xhdpi-6144-dalvik-heap.mk)

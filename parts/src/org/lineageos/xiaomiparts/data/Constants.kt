@@ -24,7 +24,3 @@ const val THERMAL_SCONFIG = "/sys/class/thermal/thermal_message/sconfig"
 // Charge
 const val PREF_BYPASS_CHARGE = "bypass_charge"
 const val BYPASS_CHARGE_NODE = "/sys/class/power_supply/battery/input_suspend"
-
-// ReVanced
-const val PROPERTY_REVANCED_ENABLED = "persist.sys.revan.mod"
-const val PROPERTY_REVANCED_AVAILABLE = "ro.revanced.available"
