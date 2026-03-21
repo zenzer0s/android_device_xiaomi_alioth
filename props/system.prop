@@ -55,3 +55,12 @@ vendor.sys.thermal.data.path=/data/vendor/thermal/
 persist.vendor.sys.memplus.enable=false
 ro.vendor.qti.sys.fw.bg_apps_limit=30
 ro.vendor.qti.sys.fw.bservice_limit=60
+
+# Enable or disable ScrollOptimizer globally
+persist.sys.perf.scroll_opt=true
+
+# Heavy app handling mode
+# 0 - Disable heavy app classification
+# 1 - Enable dynamic detection (based on frame duration and buffer load)
+# 2 - Treat all apps as heavy for performance
+persist.sys.perf.scroll_opt.heavy_app=2
