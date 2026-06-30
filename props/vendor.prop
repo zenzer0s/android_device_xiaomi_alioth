@@ -3,7 +3,7 @@ aaudio.hw_burst_min_usec=2000
 aaudio.mmap_exclusive_policy=2
 aaudio.mmap_policy=1
 audio.deep_buffer.media=true
-audio.offload.buffer.size.kb=32
+audio.offload.buffer.size.kb=64
 audio.offload.gapless.enabled=true
 persist.vendor.audio.ambisonic.auto.profile=false
 persist.vendor.audio.ambisonic.capture=false
@@ -305,7 +305,7 @@ ro.vendor.audio.us.type=mius
 ro.vendor.audio.zoom.support=true
 ro.vendor.audio.zoom.type=1
 vendor.audio.adm.buffering.ms=2
-vendor.audio.offload.buffer.size.kb=256
+vendor.audio.offload.buffer.size.kb=64
 vendor.audio_hal.period_multiplier=2
 
 # Audio hardware
