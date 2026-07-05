@@ -18,14 +18,13 @@ TARGET_INCLUDES_MIUI_CAMERA := true
 # Inherit from alioth device
 $(call inherit-product, device/xiaomi/alioth/device.mk)
 
-TARGET_INCLUDE_REVANCED := true
+WITH_REVANCED := false
 TARGET_DISABLE_EPPE = true
 ASCP_MAINTAINER = zenzer0s
 WITH_BCR := true
-WITH_GMS := true
 ASCP_OFFICIAL := true
 
-PRODUCT_NAME := lineage_alioth
+PRODUCT_NAME := custom_alioth
 PRODUCT_DEVICE := alioth
 PRODUCT_MANUFACTURER := Xiaomi
 PRODUCT_BRAND := POCO
