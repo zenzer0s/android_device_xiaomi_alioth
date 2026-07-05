@@ -5,4 +5,4 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/custom_alioth.mk
+    $(LOCAL_DIR)/alioth.mk

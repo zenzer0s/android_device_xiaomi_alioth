@@ -4,12 +4,12 @@ base64 -d device/xiaomi/alioth/configs/camera/secret > device/xiaomi/alioth/conf
 
 # Clone kernel_xiaomi_sm8250
 if [ ! -d "kernel/xiaomi/sm8250" ]; then
-    git clone -b 16-R404 https://github.com/Meow-prjkt/android_kernel_xiaomi_sm8250.git kernel/xiaomi/sm8250 --depth 1 && cd kernel/xiaomi/sm8250 && sed -i '/kernelsu/d' drivers/Kconfig && cd - > /dev/null
+    git clone https://github.com/TIMISONG-dev/kernel_xiaomi_sm8250.git kernel/xiaomi/sm8250  --depth=1 && cd kernel/xiaomi/sm8250 && sed -i '/kernelsu/d' drivers/Kconfig && cd - > /dev/null
 fi
 
 # Clone hardware_xiaomi
 if [ ! -d "hardware/xiaomi" ]; then
-    git clone https://github.com/Meow-prjkt/android_hardware_xiaomi.git hardware/xiaomi
+    git clone https://github.com/Sanjis-Android-Playground/hardware_xiaomi hardware/xiaomi -b aosp-16
 fi
 
 # Clone hardware_dolby
@@ -24,7 +24,7 @@ fi
 
 # Clone packages_apps_GameBar
 if [ ! -d "packages/apps/GameBar" ]; then
-    git clone https://github.com/kenway214/packages_apps_GameBar.git packages/apps/GameBar
+    git clone https://github.com/Sanjis-Android-Playground/packages_apps_GameBar.git  packages/apps/GameBar/
 fi
 
 # Clone vendor_xiaomi_camera
@@ -36,11 +36,6 @@ fi
 # Clone device_xiaomi_camera
 if [ ! -d "device/xiaomi/camera" ]; then
     git clone https://github.com/PocoF3Releases/device_xiaomi_camera device/xiaomi/camera -b aosp-16 --depth 1
-fi
-
-# Clone vendor_infinity-priv_keys
-if [ ! -d "vendor/infinity-priv/keys" ]; then
-    git clone https://github.com/ProjectInfinity-X/vendor_infinity-priv_keys vendor/infinity-priv/keys
 fi
 
 # Apply Binder threadpool patch
